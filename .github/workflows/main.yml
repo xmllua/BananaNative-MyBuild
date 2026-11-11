@@ -12,7 +12,7 @@ jobs:
     - name: Checkout Code
       uses: actions/checkout@v4
       with:
-        submodules: recursive # 确保拉取所有子模块代码
+        submodules: recursive
 
     - name: Set up JDK 17
       uses: actions/setup-java@v4
@@ -28,11 +28,10 @@ jobs:
     - name: Build On-Device Packer
       run: |
         cd android/ondevice
-        # 修复由于 Windows 换行符导致的脚本无法执行问题
         sed -i 's/\r$//' build.sh
         chmod +x build.sh
-        # 使用 bash 显式执行
-        bash build.sh
+        # 修复：传入工作目录 ./work 和编译目标 all
+        bash build.sh ./work all
 
     - name: Build with Gradle
       run: |
@@ -41,8 +40,8 @@ jobs:
         chmod +x gradlew
         rm -rf ~/.gradle/caches
         
-        # 关键：使用真正的 stage 路径打包，去掉 fake 参数
-        ./gradlew assembleDebug --stacktrace -PnxPackStage=$(pwd)/../ondevice/stage
+        # 修复：把路径指向刚才生成的 work/stage 目录
+        ./gradlew assembleDebug --stacktrace -PnxPackStage=$(pwd)/../ondevice/work/stage
 
     - name: Upload APK
       uses: actions/upload-artifact@v4
