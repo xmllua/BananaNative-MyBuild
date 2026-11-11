@@ -1,4 +1,4 @@
-name: Build BananaNative APK
+name: Build BananaNative Full APK
 
 on:
   push:
@@ -23,6 +23,13 @@ jobs:
       with:
         packages: 'platform-tools platforms;android-34 build-tools;34.0.0 ndk;26.1.10909125 cmake;3.22.1'
 
+    # 新增步骤：先运行原版的打包脚本，生成完整的底层引擎
+    - name: Build On-Device Packer
+      run: |
+        cd android/ondevice
+        chmod +x build.sh
+        ./build.sh
+
     - name: Build with Gradle
       run: |
         cd android/app
@@ -30,11 +37,11 @@ jobs:
         chmod +x gradlew
         rm -rf ~/.gradle/caches
         
-        # 核心修复：加上 -PnxPackEngine=fake 骗过编译器的检查
-        ./gradlew assembleDebug --stacktrace -PnxPackEngine=fake
+        # 核心修改：去掉 fake 参数，加上真正的 stage 路径参数
+        ./gradlew assembleDebug --stacktrace -PnxPackStage=$(pwd)/../ondevice/stage
 
     - name: Upload APK
       uses: actions/upload-artifact@v4
       with:
-        name: BananaNative-Debug-APK
+        name: BananaNative-Full-APK
         path: android/app/build/outputs/apk/debug/*.apk
