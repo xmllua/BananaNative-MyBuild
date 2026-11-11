@@ -28,9 +28,12 @@ jobs:
         cd android/app
         echo "sdk.dir=$ANDROID_HOME" > local.properties
         chmod +x gradlew
-        # 强制清理缓存，防止旧版本残留
         rm -rf ~/.gradle/caches
-        # 使用项目自带的 gradlew 进行编译，不再使用云端默认版本
+        
+        # 核心修复：强制把云端 Gradle 版本改回 8.5，避开 8.14 的语法报错
+        sed -i 's|distributionUrl=.*|distributionUrl=https\\://services.gradle.org/distributions/gradle-8.5-bin.zip|g' gradle/wrapper/gradle-wrapper.properties
+        
+        # 开始编译
         ./gradlew assembleDebug --stacktrace
 
     - name: Upload APK
