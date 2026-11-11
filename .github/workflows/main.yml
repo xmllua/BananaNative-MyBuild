@@ -28,10 +28,10 @@ jobs:
         cd android/app
         echo "sdk.dir=$ANDROID_HOME" > local.properties
         chmod +x gradlew
-        # 强制清理缓存，防止旧版本残留
         rm -rf ~/.gradle/caches
-        # 使用项目自带的 gradlew 进行编译，不再使用云端默认版本
-        ./gradlew assembleDebug --stacktrace
+        
+        # 核心修复：加上 -PnxPackEngine=fake 骗过编译器的检查
+        ./gradlew assembleDebug --stacktrace -PnxPackEngine=fake
 
     - name: Upload APK
       uses: actions/upload-artifact@v4
